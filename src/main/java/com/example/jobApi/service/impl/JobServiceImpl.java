@@ -13,8 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class JobServiceImpl implements JobService {
@@ -24,16 +24,58 @@ public class JobServiceImpl implements JobService {
     private RestTemplate restTemplate;
 
     @Override
-    public List<Job> getJobs() {
+    public List<?> getJobs(String groupBy) {
         UriComponentsBuilder uriBuilder = UriComponentsBuilder
                 .fromUriString(applicationConfig.URL_DANS_PRO_JOB_LISTS);
         ResponseEntity<List<Job>> result = restTemplate.
                 exchange(uriBuilder.toUriString(),
                         HttpMethod.GET, null, new ParameterizedTypeReference<List<Job>>() {});
+
+        List<Job> jobs = result.getBody();
+        if(groupBy.equals("location")){
+            Map<String, List<Job>> jobsByLocation = jobs.stream()
+                    .collect(Collectors.groupingBy(Job::getLocation));
+
+            List<Map<String, Object>> groupedJobs = jobsByLocation.entrySet().stream()
+                    .map(entry -> {
+                        Map<String, Object> groupMap = new LinkedHashMap<>();
+                        groupMap.put("location", entry.getKey());
+                        groupMap.put("data", entry.getValue());
+                        return groupMap;
+                    })
+                    .collect(Collectors.toList());
+
+            return groupedJobs;
+        }
         List<Job> jobList = new ArrayList<>();
-        jobList.addAll(result.getBody());
+        jobList.addAll(jobs);
         return jobList;
     }
+
+//    @Override
+//    public List<Map<String, Object>> getFilteredJobs() {
+//        UriComponentsBuilder uriBuilder = UriComponentsBuilder
+//                .fromUriString(applicationConfig.URL_DANS_PRO_JOB_LISTS);
+//        ResponseEntity<List<Job>> result = restTemplate
+//                .exchange(uriBuilder.toUriString(),
+//                        HttpMethod.GET, null, new ParameterizedTypeReference<List<Job>>() {});
+//
+//        List<Job> jobs = result.getBody();
+//
+//        Map<String, List<Job>> jobsByLocation = jobs.stream()
+//                .collect(Collectors.groupingBy(Job::getLocation));
+//
+//        List<Map<String, Object>> groupedJobs = jobsByLocation.entrySet().stream()
+//                .map(entry -> {
+//                    Map<String, Object> groupMap = new LinkedHashMap<>();
+//                    groupMap.put("location", entry.getKey());
+//                    groupMap.put("data", entry.getValue());
+//                    return groupMap;
+//                })
+//                .collect(Collectors.toList());
+//
+//        return groupedJobs;
+//    }
 
     @Override
     public Job getJobById(String id) {

@@ -28,11 +28,11 @@ public class JobControllerTest {
 
     @Test
     public void testListJob_Successful() {
-        List<Job> mockJobList = createMockJobList();
+        String groupBy = "location";
+        List<?> mockJobList = createMockJobList();
 
-        when(jobService.getJobs()).thenReturn(mockJobList);
-
-        ResponseEntity<ApiResponse<?>> responseEntity = jobController.listJob();
+        Mockito.doReturn(mockJobList).when(jobService).getJobs(groupBy);
+        ResponseEntity<ApiResponse<?>> responseEntity = jobController.listJob(groupBy);
 
         Assertions.assertNotNull(responseEntity);
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
@@ -46,7 +46,7 @@ public class JobControllerTest {
         Assertions.assertNotNull(responseData);
         Assertions.assertEquals(mockJobList.size(), responseData.size());
 
-        Mockito.verify(jobService).getJobs();
+        Mockito.verify(jobService).getJobs(groupBy);
     }
 
     @Test
@@ -95,9 +95,10 @@ public class JobControllerTest {
 
     @Test
     public void testListJob_InternalServerError() {
-        when(jobService.getJobs()).thenThrow(new RuntimeException("Some internal error"));
+        String groupBy = "location";
+        when(jobService.getJobs(groupBy)).thenThrow(new RuntimeException("Some internal error"));
 
-        ResponseEntity<ApiResponse<?>> responseEntity = jobController.listJob();
+        ResponseEntity<ApiResponse<?>> responseEntity = jobController.listJob(groupBy);
 
         Assertions.assertNotNull(responseEntity);
         Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode());
@@ -108,7 +109,7 @@ public class JobControllerTest {
         Assertions.assertEquals("Error message: Some internal error", response.getMessage());
         Assertions.assertNull(response.getData());
 
-        Mockito.verify(jobService).getJobs();
+        Mockito.verify(jobService).getJobs(groupBy);
     }
 
     @Test

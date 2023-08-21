@@ -44,13 +44,15 @@ public class JobServiceImplTest {
 
     @Test
     public void testGetJobs_Successful() {
+        String groupBy = "location";
+
         List<Job> mockJobList = createMockJobList();
 
         ResponseEntity<List<Job>> responseEntity = new ResponseEntity<>(mockJobList, HttpStatus.OK);
         when(restTemplate.exchange(Mockito.eq(applicationConfig.URL_DANS_PRO_JOB_LISTS), Mockito.eq(HttpMethod.GET), Mockito.isNull(), Mockito.any(ParameterizedTypeReference.class)))
                 .thenReturn(responseEntity);
 
-        List<Job> jobList = jobService.getJobs();
+        List<?> jobList = jobService.getJobs(groupBy);
 
         Assertions.assertNotNull(jobList);
         Assertions.assertEquals(mockJobList.size(), jobList.size());
@@ -61,7 +63,7 @@ public class JobServiceImplTest {
     @Test
     public void testGetJobById_Successful() {
         String mockJobId = "123";
-        Job mockJob = createMockJob("1");
+        Job mockJob = createMockJob("1", "A");
 
         ResponseEntity<Job> responseEntity = new ResponseEntity<>(mockJob, HttpStatus.OK);
         when(restTemplate.exchange(Mockito.eq(applicationConfig.URL_DANS_PRO_JOB_DETAIL+mockJobId), Mockito.eq(HttpMethod.GET), Mockito.isNull(), Mockito.eq(Job.class)))
@@ -91,15 +93,16 @@ public class JobServiceImplTest {
 
     private List<Job> createMockJobList() {
         List<Job> jobs = new ArrayList<>();
-        jobs.add(createMockJob("1"));
-        jobs.add(createMockJob("2"));
-        jobs.add(createMockJob("3"));
+        jobs.add(createMockJob("1","A"));
+        jobs.add(createMockJob("2", "B"));
+        jobs.add(createMockJob("3", "C"));
         return jobs;
     }
 
-    private Job createMockJob(String id) {
+    private Job createMockJob(String id, String location) {
         Job job = new Job();
         job.setId(id);
+        job.setLocation(location);
         return job;
     }
 }

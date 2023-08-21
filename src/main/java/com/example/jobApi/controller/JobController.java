@@ -1,7 +1,6 @@
 package com.example.jobApi.controller;
 
 import com.example.jobApi.dto.ApiResponse;
-import com.example.jobApi.dto.AuthenticationResponse;
 import com.example.jobApi.dto.Job;
 import com.example.jobApi.exception.CustomException;
 import com.example.jobApi.service.JobService;
@@ -10,9 +9,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class JobController {
@@ -20,10 +21,10 @@ public class JobController {
     JobService jobService;
 
     @GetMapping("/jobs")
-    public ResponseEntity<ApiResponse<?>> listJob(){
+    public ResponseEntity<ApiResponse<?>> listJob(@RequestParam(required = false, defaultValue = "defaultGroupBy") String groupBy){
         try{
-            List<Job> jobs = jobService.getJobs();
-            ApiResponse<List<Job>> response = new ApiResponse<>();
+            List<?> jobs = jobService.getJobs(groupBy);
+            ApiResponse<List<?>> response = new ApiResponse<>();
             response.setSuccess(true);
             response.setMessage("Success get all jobs");
             response.setData(jobs);
